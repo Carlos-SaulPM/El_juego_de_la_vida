@@ -24,7 +24,7 @@ public class JuegoDeLaVida {
     public JuegoDeLaVida(ADTArray2D<Celula> cuadricula, int generacionFinal) {
         this.cuadricula = cuadricula;
         this.generacionFinal = generacionFinal;
-        this.generacionActual = new ADTArray2D<>(cuadricula.getRow(), cuadricula.getCol());
+        this.generacionActual = new ADTArray2D<Celula>(cuadricula.getRow(), cuadricula.getCol());
         this.generacionActual.copiarEstadoDe(cuadricula);
         cargarLimites(cuadricula.getRow(), cuadricula.getCol());
     }
@@ -39,13 +39,13 @@ public class JuegoDeLaVida {
         limitesCentro.add(new Integer[]{filas - 1, columnas - 1});
         //Limites extremos
         limitesExtremos.add(new Integer[]{0, 0});
-        limitesExtremos.add(new Integer[]{0, columnas});
-        //Inferiores
-        limitesExtremos.add(new Integer[]{filas, 0});
-        limitesExtremos.add(new Integer[]{filas, columnas});
+        limitesExtremos.add(new Integer[]{0, columnas - 1});
+        limitesExtremos.add(new Integer[]{filas - 1, 0});
+        limitesExtremos.add(new Integer[]{filas - 1, columnas - 1});
+
     }
 
-    private void actualizarGeneracion() {
+    public void actualizarGeneracion() {
         actualizarCelulas(generacionActual);
         cuadricula.copiarEstadoDe(generacionActual);
     }
@@ -61,30 +61,20 @@ public class JuegoDeLaVida {
     private void actualizarSiguienteGeneracion(Celula celula) {
         boolean estaViva = celula.isEstaVivo();
         int vecinosVivos = cuantosVecinosVivosTiene(celula);
-        boolean regla1 = regla1(celula.getFila(), celula.getColumna(), vecinosVivos);//Sobrevive si es verdadera
-        if (!regla1 && estaViva){
-            boolean regla2 = regla2(celula.getFila(), celula.getColumna(), vecinosVivos); //Muere por soledad
-            boolean regla3 = regla3(celula.getFila(), celula.getColumna(), vecinosVivos); //Muere por sobrepoblacion
-            if (regla2 || regla3){
-                celula.setEstaVivo(false);
-            }
-        }else {
-            //Regla 4
+
+        System.out.println("Celula en (" + celula.getFila() + ", " + celula.getColumna() + ") - Estado actual: " + (estaViva ? "Viva" : "Muerta") + ", Vecinos vivos: " + vecinosVivos);
+
+        if (estaViva && (vecinosVivos < 2 || vecinosVivos > 3)) {
+            celula.setEstaVivo(false);
+        } else if (!estaViva && vecinosVivos == 3) {
             celula.setEstaVivo(true);
         }
+
+        System.out.println("Nuevo estado: " + (celula.isEstaVivo() ? "Viva" : "Muerta"));
     }
 
-    private boolean regla1(int fila, int columna, int vecinosVivos) {
-        return false;
-    }
 
-    private boolean regla2(int fila, int columna, int vecinosVivos) {
-        return false;
-    }
 
-    private boolean regla3(int fila, int columna, int vecinosVivos) {
-        return false;
-    }
 
     private int cuantosVecinosVivosTiene(Celula celula) {
         int vecinosvivos = 0;
@@ -120,11 +110,16 @@ public class JuegoDeLaVida {
         for (int vecinoFila = celulaFila - 1; vecinoFila <= celulaFila + 1; vecinoFila++) {
             for (int vecinoColumna = celulaColumna - 1; vecinoColumna <= celulaColumna + 1; vecinoColumna++) {
                 if (vecinoFila == celulaFila && vecinoColumna == celulaColumna) continue;
-                if (generacionActual.get_item(vecinoFila, vecinoColumna).isEstaVivo()) vecinosvivos++;
+                // Verificar si el vecino está dentro de los límites de la matriz
+                if (vecinoFila >= 0 && vecinoFila < generacionActual.getRow() && vecinoColumna >= 0 && vecinoColumna < generacionActual.getCol()) {
+                    if (generacionActual.get_item(vecinoFila, vecinoColumna).isEstaVivo()) vecinosvivos++;
+                }
             }
         }
         return vecinosvivos;
     }
+
+
 
     private boolean estaEnUnaEsquina(Celula celula) {
         boolean laCelulaEstaEnUnaEsquina = false;
@@ -152,13 +147,21 @@ public class JuegoDeLaVida {
             orientacionArribaOAbajo = -1;
         }
 
-        if (generacionActual.get_item(fila, columna + orientacionIzquierdaODerecha).isEstaVivo()) vecinosVivos++;
-        if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna + orientacionIzquierdaODerecha).isEstaVivo())
-            vecinosVivos++;
-        if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna).isEstaVivo()) vecinosVivos++;
-
+        if (fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
+            if (columna + orientacionIzquierdaODerecha >= 0 && columna + orientacionIzquierdaODerecha < generacionActual.getCol()) {
+                if (generacionActual.get_item(fila, columna + orientacionIzquierdaODerecha).isEstaVivo()) vecinosVivos++;
+            }
+            if (columna + orientacionIzquierdaODerecha >= 0 && columna + orientacionIzquierdaODerecha < generacionActual.getCol() &&
+                    fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
+                if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna + orientacionIzquierdaODerecha).isEstaVivo()) vecinosVivos++;
+            }
+            if (fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
+                if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna).isEstaVivo()) vecinosVivos++;
+            }
+        }
         return vecinosVivos;
     }
+
 
     private int obtenerLaEsquina(Celula celula) {
         int esquinaEnLaQueEsta = 0;
@@ -206,15 +209,20 @@ public class JuegoDeLaVida {
         return vecinosVivos;
     }
 
+
     // Metodo auxiliar para verificar si una célula está viva
     private int estaViva(int fila, int columna) {
-        return generacionActual.get_item(fila, columna).isEstaVivo() ? 1 : 0;
+        if (fila >= 0 && fila < generacionActual.getRow() && columna >= 0 && columna < generacionActual.getCol()) {
+            return generacionActual.get_item(fila, columna).isEstaVivo() ? 1 : 0;
+        }
+        return 0;
     }
+
 
     private int obtenerElLateral(Celula celula) {
         int esquinaEnLaQueEsta = 0;
         //ESQUINA
-        for (int indexLimitesExtremos = 0; indexLimitesExtremos < limitesExtremos.size(); indexLimitesExtremos += 4) {
+        for (int indexLimitesExtremos = 0; indexLimitesExtremos < limitesExtremos.size(); indexLimitesExtremos += 3) {
             if (celula.getFila() == limitesExtremos.get(indexLimitesExtremos)[0]) {
                 if (indexLimitesExtremos == 0) {
                     esquinaEnLaQueEsta = 1;
@@ -223,7 +231,7 @@ public class JuegoDeLaVida {
                 }
                 break;
             }
-            if (celula.getColumna() == limitesCentro.get(indexLimitesExtremos)[1]) {
+            if (celula.getColumna() == limitesExtremos.get(indexLimitesExtremos)[1]) {
                 if (indexLimitesExtremos == 0) {
                     esquinaEnLaQueEsta = 2;
                 } else {
@@ -235,5 +243,7 @@ public class JuegoDeLaVida {
         return esquinaEnLaQueEsta;
     }
 
-
+    public ADTArray2D<Celula> getCuadricula() {
+        return cuadricula;
+    }
 }

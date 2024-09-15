@@ -10,6 +10,7 @@ public class Celula {
         this.columna = columna;
         this.fila = fila;
     }
+
     public boolean isEstaVivo() {
         return estaVivo;
     }
@@ -32,5 +33,11 @@ public class Celula {
 
     public void setFila(int fila) {
         this.fila = fila;
+    }
+
+    @Override
+    public String toString() {
+        return estaVivo ? "█" : "□";
+
     }
 }
