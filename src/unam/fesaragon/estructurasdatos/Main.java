@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) {
         // Definir el tamaño de la cuadrícula
         int filas = 5;
-        int columnas =5;
+        int columnas = 5;
 
         // Crear la cuadricula de células
         ADTArray2D<Celula> cuadricula = new ADTArray2D<>(filas, columnas);
@@ -18,7 +18,7 @@ public class Main {
         }
 
         // Crear el juego de la vida
-        int generaciones = 2; // Número de generaciones que queremos simular
+        int generaciones = 5; // Número de generaciones que queremos simular
         JuegoDeLaVida juego = new JuegoDeLaVida(cuadricula, generaciones);
 
         // Ejecutar el juego y visualizar cada generación
@@ -34,6 +34,7 @@ public class Main {
     public static void imprimirCuadricula(ADTArray2D<Celula> cuadricula) {
         for (int fila = 0; fila < cuadricula.getRow(); fila++) {
             for (int col = 0; col < cuadricula.getCol(); col++) {
+                Celula celula = cuadricula.get_item(fila, col);
                 System.out.print(cuadricula.get_item(fila, col) + " ");
             }
             System.out.println();

@@ -30,13 +30,6 @@ public class ADTArray2D<T> {
         return this.array[renglon][columna];
     }
 
-    public void copiarEstadoDe( ADTArray2D<T> arrayACopiar){
-        for (int filas = 0; filas < this.getRow(); filas++) {
-            for (int columnas = 0; columnas < this.getCol(); columnas++) {
-                this.array[filas][columnas] =  arrayACopiar.array[filas][columnas];
-            }
-        }
-    }
     public int getRow() {
         return re;
     }
