@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 public class JuegoDeLaVida {
     //Hecho por Carlos Saul Paz Maldonado
+    private ArrayList<Coordenada> coordenadasCentro = new ArrayList<>();
+    private ArrayList<Coordenada> coordenadasEsquinas = new ArrayList<>();
+
+
+//    private ArrayList<Coordenada> coordenadasBordes = new ArrayList<>();
     private ADTArray2D<Celula> cuadricula;
     private ADTArray2D<Celula> generacionActual;
     private ArrayList<Integer[]> limitesCentro = new ArrayList<>();
@@ -27,6 +32,24 @@ public class JuegoDeLaVida {
         this.generacionActual = new ADTArray2D<Celula>(cuadricula.getRow(), cuadricula.getCol());
         this.generacionActual.copiarEstadoDe(cuadricula);
         cargarLimites(cuadricula.getRow(), cuadricula.getCol());
+        cargarCoordenadas(cuadricula.getRow(), cuadricula.getCol());
+    }
+
+    private void cargarCoordenadas(int filas, int columnas) {
+        //Reducir en 1, empieza en 0 el index de la cuadricula
+        filas--;
+        columnas--;
+        //Coordenadas de los limites centrales
+        coordenadasCentro.add(new Coordenada(1,1));
+        coordenadasCentro.add(new Coordenada(1,columnas-1));
+        coordenadasCentro.add(new Coordenada(filas-1,columnas-1));
+        coordenadasCentro.add(new Coordenada(filas-1,1));
+        //Coordenadas de las esquinas
+        coordenadasEsquinas.add(new Coordenada(0,0));
+        coordenadasEsquinas.add(new Coordenada(0,columnas));
+        coordenadasEsquinas.add(new Coordenada(filas,columnas));
+        coordenadasEsquinas.add(new Coordenada(filas,0));
+
     }
 
     private void cargarLimites(int filas, int columnas) {
@@ -51,8 +74,8 @@ public class JuegoDeLaVida {
     }
 
     private void actualizarCelulas(ADTArray2D<Celula> generacionAActualizar) {
-        for (int columna = 0; columna < generacionAActualizar.getCol(); columna++) {
-            for (int fila = 0; fila < generacionAActualizar.getRow(); fila++) {
+        for (int fila = 0; fila < generacionAActualizar.getRow(); fila++) {
+            for (int columna = 0; columna < generacionAActualizar.getCol(); columna++) {
                 actualizarSiguienteGeneracion(generacionAActualizar.get_item(fila, columna));
             }
         }
@@ -96,9 +119,10 @@ public class JuegoDeLaVida {
 
     private boolean verificarCelulaEnCuadriculaCentro(Celula celula) {
         boolean laCelulaEstaEnElMedio = false;
-        for (int indexLimitesCentro = 0; indexLimitesCentro < limitesCentro.size(); indexLimitesCentro++) {
-            if (celula.getFila() == limitesCentro.get(indexLimitesCentro)[0] && celula.getColumna() == limitesCentro.get(indexLimitesCentro)[1])
+        if (celula.getFila()>= coordenadasCentro.getFirst().getFila() && celula.getFila()<=coordenadasCentro.get(3).getFila()){
+            if (celula.getColumna() >=coordenadasCentro.getFirst().getColumna() && celula.getColumna()<= coordenadasCentro.get(1).getColumna()){
                 laCelulaEstaEnElMedio = true;
+            }
         }
         return laCelulaEstaEnElMedio;
     }
@@ -107,26 +131,22 @@ public class JuegoDeLaVida {
         int vecinosvivos = 0;
         int celulaFila = celula.getFila();
         int celulaColumna = celula.getColumna();
-        for (int vecinoFila = celulaFila - 1; vecinoFila <= celulaFila + 1; vecinoFila++) {
-            for (int vecinoColumna = celulaColumna - 1; vecinoColumna <= celulaColumna + 1; vecinoColumna++) {
-                if (vecinoFila == celulaFila && vecinoColumna == celulaColumna) continue;
-                // Verificar si el vecino está dentro de los límites de la matriz
-                if (vecinoFila >= 0 && vecinoFila < generacionActual.getRow() && vecinoColumna >= 0 && vecinoColumna < generacionActual.getCol()) {
-                    if (generacionActual.get_item(vecinoFila, vecinoColumna).isEstaVivo()) vecinosvivos++;
-                }
+        ArrayList<Coordenada> vecinos = new Coordenada(celula.getFila(),celula.getColumna()).obtenerVecinos();
+        for (Coordenada coordenada: vecinos){
+            if (generacionActual.get_item(coordenada.getFila(),coordenada.getColumna()).isEstaVivo()){
+                vecinosvivos++;
             }
         }
         return vecinosvivos;
     }
 
-
-
     private boolean estaEnUnaEsquina(Celula celula) {
         boolean laCelulaEstaEnUnaEsquina = false;
         //ESQUINA
-        for (int indexLimitesExtremos = 0; indexLimitesExtremos < limitesExtremos.size(); indexLimitesExtremos++) {
-            if (celula.getFila() == limitesExtremos.get(indexLimitesExtremos)[0] && celula.getColumna() == limitesExtremos.get(indexLimitesExtremos)[1])
-                laCelulaEstaEnUnaEsquina = true;
+        for (Coordenada coordenada : coordenadasEsquinas){
+            if (celula.getFila() == coordenada.getFila() && celula.getColumna() == coordenada.getColumna()){
+                laCelulaEstaEnUnaEsquina=true;
+            }
         }
         return laCelulaEstaEnUnaEsquina;
     }
@@ -134,44 +154,26 @@ public class JuegoDeLaVida {
     private int calcVecinosVivosEsquina(Celula celula) {
         int fila = celula.getFila();
         int columna = celula.getColumna();
-        int esquina = obtenerLaEsquina(celula);
+        Coordenada coordenadaDeLaEsquina = coordenadaDeLaEsquina(celula);
         int vecinosVivos = 0;
-        int orientacionIzquierdaODerecha = 1; // izquierda = 1, derecha = -1
-        int orientacionArribaOAbajo = 1; // arriba = 1, abajo = -1
-        //Determinar la orientacion horizontal (Izquierda o derecha)
-        if (esquina == ESQUINA_SUPERIOR_DER || esquina == ESQUINA_INFERIOR_DER) {
-            orientacionIzquierdaODerecha = -1;
-        }
-        //Determinar la orientacion vertical (Arriba o abajo)
-        if (esquina == ESQUINA_INFERIOR_IZQ || esquina == ESQUINA_INFERIOR_DER) {
-            orientacionArribaOAbajo = -1;
-        }
+        //Superior izquierda o inferior
+        if (coordenadaDeLaEsquina.getFila()==coordenadasEsquinas.getFirst().getFila() || coordenadaDeLaEsquina.getFila()==coordenadasEsquinas.get(3).getFila()){
 
-        if (fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
-            if (columna + orientacionIzquierdaODerecha >= 0 && columna + orientacionIzquierdaODerecha < generacionActual.getCol()) {
-                if (generacionActual.get_item(fila, columna + orientacionIzquierdaODerecha).isEstaVivo()) vecinosVivos++;
-            }
-            if (columna + orientacionIzquierdaODerecha >= 0 && columna + orientacionIzquierdaODerecha < generacionActual.getCol() &&
-                    fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
-                if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna + orientacionIzquierdaODerecha).isEstaVivo()) vecinosVivos++;
-            }
-            if (fila + orientacionArribaOAbajo >= 0 && fila + orientacionArribaOAbajo < generacionActual.getRow()) {
-                if (generacionActual.get_item(fila + orientacionArribaOAbajo, columna).isEstaVivo()) vecinosVivos++;
-            }
         }
         return vecinosVivos;
     }
 
 
-    private int obtenerLaEsquina(Celula celula) {
-        int esquinaEnLaQueEsta = 0;
+    private Coordenada coordenadaDeLaEsquina(Celula celula) {
+        Coordenada esquinaEnLaQueEsta = new Coordenada();
         //ESQUINA
-        for (int indexLimitesExtremos = 0; indexLimitesExtremos < limitesExtremos.size(); indexLimitesExtremos++) {
-            if (celula.getFila() == limitesExtremos.get(indexLimitesExtremos)[0] && celula.getColumna() == limitesExtremos.get(indexLimitesExtremos)[1]) {
-                esquinaEnLaQueEsta = indexLimitesExtremos + 1;
-                break;
+        for (Coordenada coordenada : coordenadasEsquinas){
+            if (celula.getFila() == coordenada.getFila() && celula.getColumna() == coordenada.getColumna()){
+                esquinaEnLaQueEsta.setFila(coordenada.getFila());
+                esquinaEnLaQueEsta.setColumna(coordenada.getColumna());
             }
         }
+
         return esquinaEnLaQueEsta;
     }
 
