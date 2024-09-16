@@ -6,33 +6,19 @@ public class JuegoDeLaVida {
     //Hecho por Carlos Saul Paz Maldonado
     private ArrayList<Coordenada> coordenadasCentro = new ArrayList<>();
     private ArrayList<Coordenada> coordenadasEsquinas = new ArrayList<>();
-
-
-//    private ArrayList<Coordenada> coordenadasBordes = new ArrayList<>();
-    private ADTArray2D<Celula> cuadricula;
+    private ArrayList<Coordenada> desplazamientosVecinos = new ArrayList<>();
+    private ArrayList<Coordenada> coordenadaslaterales = new ArrayList<>();
     private ADTArray2D<Celula> generacionActual;
-    private ArrayList<Integer[]> limitesCentro = new ArrayList<>();
-    private ArrayList<Integer[]> limitesExtremos = new ArrayList<>();
+    private ADTArray2D<Celula> siguienteGeneracion;
     private int generacionFinal;
     private final int TIEMPO_MILISEGUNDOS = 800;
-    //Sentido horario
-    private final int ESQUINA_SUPERIOR_IZQ = 1;
-    private final int ESQUINA_SUPERIOR_DER = 2;
-    private final int ESQUINA_INFERIOR_IZQ = 3;
-    private final int ESQUINA_INFERIOR_DER = 4;
-    //Sentido antihorario
-    private final int LATERAL_SUPERIOR = 1;
-    private final int LATERAL_IZQUIERDO = 2;
-    private final int LATERAL_INFERIOR = 3;
-    private final int LATERAL_DERECHO = 4;
 
-    public JuegoDeLaVida(ADTArray2D<Celula> cuadricula, int generacionFinal) {
-        this.cuadricula = cuadricula;
+
+    public JuegoDeLaVida(ADTArray2D<Celula> generacionActual, int generacionFinal) {
+        this.generacionActual = generacionActual;
         this.generacionFinal = generacionFinal;
-        this.generacionActual = new ADTArray2D<Celula>(cuadricula.getRow(), cuadricula.getCol());
-        this.generacionActual.copiarEstadoDe(cuadricula);
-        cargarLimites(cuadricula.getRow(), cuadricula.getCol());
-        cargarCoordenadas(cuadricula.getRow(), cuadricula.getCol());
+        this.siguienteGeneracion = new ADTArray2D<Celula>(generacionActual.getRow(), generacionActual.getCol());
+        cargarCoordenadas(generacionActual.getRow(), generacionActual.getCol());
     }
 
     private void cargarCoordenadas(int filas, int columnas) {
@@ -40,62 +26,61 @@ public class JuegoDeLaVida {
         filas--;
         columnas--;
         //Coordenadas de los limites centrales
-        coordenadasCentro.add(new Coordenada(1,1));
-        coordenadasCentro.add(new Coordenada(1,columnas-1));
-        coordenadasCentro.add(new Coordenada(filas-1,columnas-1));
-        coordenadasCentro.add(new Coordenada(filas-1,1));
+        coordenadasCentro.add(new Coordenada(1, 1));
+        coordenadasCentro.add(new Coordenada(1, columnas - 1));
+        coordenadasCentro.add(new Coordenada(filas - 1, columnas - 1));
+        coordenadasCentro.add(new Coordenada(filas - 1, 1));
         //Coordenadas de las esquinas
-        coordenadasEsquinas.add(new Coordenada(0,0));
-        coordenadasEsquinas.add(new Coordenada(0,columnas));
-        coordenadasEsquinas.add(new Coordenada(filas,columnas));
-        coordenadasEsquinas.add(new Coordenada(filas,0));
+        coordenadasEsquinas.add(new Coordenada(0, 0));
+        coordenadasEsquinas.add(new Coordenada(0, columnas));
+        coordenadasEsquinas.add(new Coordenada(filas, columnas));
+        coordenadasEsquinas.add(new Coordenada(filas, 0));
+        //Coordenadas de los vecinos
+        desplazamientosVecinos.add(new Coordenada(-1, -1));
+        desplazamientosVecinos.add(new Coordenada(-1, 0));
+        desplazamientosVecinos.add(new Coordenada(-1, 1));
+        desplazamientosVecinos.add(new Coordenada(0, -1));
+        desplazamientosVecinos.add(new Coordenada(0, 1));
+        desplazamientosVecinos.add(new Coordenada(1, -1));
+        desplazamientosVecinos.add(new Coordenada(1, 0));
+        desplazamientosVecinos.add(new Coordenada(1, 1));
+        //Coordenadas de los laterales
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(0).getFila(),coordenadasEsquinas.get(0).getColumna()+1));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(1).getFila(),coordenadasEsquinas.get(1).getColumna()-1));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(1).getFila()+1,coordenadasEsquinas.get(1).getColumna()));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(2).getFila()+1,coordenadasEsquinas.get(2).getColumna()));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(2).getFila(),coordenadasEsquinas.get(2).getColumna()+1));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(3).getFila(),coordenadasEsquinas.get(3).getColumna()+1));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(3).getFila()+1,coordenadasEsquinas.get(3).getColumna()));
+        coordenadaslaterales.add(new Coordenada(coordenadasEsquinas.get(0).getFila()+1,coordenadasEsquinas.get(3).getColumna()));
 
     }
 
-    private void cargarLimites(int filas, int columnas) {
-        //Limites Centro
-        //Superiores
-        limitesCentro.add(new Integer[]{1, 1});
-        limitesCentro.add(new Integer[]{1, columnas - 1});
-        //Inferiores
-        limitesCentro.add(new Integer[]{filas - 1, 1});
-        limitesCentro.add(new Integer[]{filas - 1, columnas - 1});
-        //Limites extremos
-        limitesExtremos.add(new Integer[]{0, 0});
-        limitesExtremos.add(new Integer[]{0, columnas - 1});
-        limitesExtremos.add(new Integer[]{filas - 1, 0});
-        limitesExtremos.add(new Integer[]{filas - 1, columnas - 1});
-
-    }
 
     public void actualizarGeneracion() {
-        actualizarCelulas(generacionActual);
-        cuadricula.copiarEstadoDe(generacionActual);
+        actualizarCelulas(generacionActual, siguienteGeneracion);
+
     }
 
-    private void actualizarCelulas(ADTArray2D<Celula> generacionAActualizar) {
+    private void actualizarCelulas(ADTArray2D<Celula> generacionAActualizar, ADTArray2D<Celula> celdaAGuardar) {
         for (int fila = 0; fila < generacionAActualizar.getRow(); fila++) {
             for (int columna = 0; columna < generacionAActualizar.getCol(); columna++) {
-                actualizarSiguienteGeneracion(generacionAActualizar.get_item(fila, columna));
+                actualizarSiguienteGeneracion(generacionAActualizar.get_item(fila, columna), celdaAGuardar.get_item(fila,columna));
             }
         }
     }
 
-    private void actualizarSiguienteGeneracion(Celula celula) {
+    private void actualizarSiguienteGeneracion(Celula celula, Celula celulaAGuardar) {
         boolean estaViva = celula.isEstaVivo();
         int vecinosVivos = cuantosVecinosVivosTiene(celula);
 
-        System.out.println("Celula en (" + celula.getFila() + ", " + celula.getColumna() + ") - Estado actual: " + (estaViva ? "Viva" : "Muerta") + ", Vecinos vivos: " + vecinosVivos);
-
+        // En lugar de crear una nueva célula, modifica la existente
         if (estaViva && (vecinosVivos < 2 || vecinosVivos > 3)) {
-            celula.setEstaVivo(false);
+            celulaAGuardar.setEstaVivo(false);
         } else if (!estaViva && vecinosVivos == 3) {
-            celula.setEstaVivo(true);
+            celulaAGuardar.setEstaVivo(true);
         }
-
-        System.out.println("Nuevo estado: " + (celula.isEstaVivo() ? "Viva" : "Muerta"));
     }
-
 
 
 
@@ -119,8 +104,8 @@ public class JuegoDeLaVida {
 
     private boolean verificarCelulaEnCuadriculaCentro(Celula celula) {
         boolean laCelulaEstaEnElMedio = false;
-        if (celula.getFila()>= coordenadasCentro.getFirst().getFila() && celula.getFila()<=coordenadasCentro.get(3).getFila()){
-            if (celula.getColumna() >=coordenadasCentro.getFirst().getColumna() && celula.getColumna()<= coordenadasCentro.get(1).getColumna()){
+        if (celula.getFila() >= coordenadasCentro.get(0).getFila() && celula.getFila() <= coordenadasCentro.get(3).getFila()) {
+            if (celula.getColumna() >= coordenadasCentro.get(0).getColumna() && celula.getColumna() <= coordenadasCentro.get(1).getColumna()) {
                 laCelulaEstaEnElMedio = true;
             }
         }
@@ -131,9 +116,9 @@ public class JuegoDeLaVida {
         int vecinosvivos = 0;
         int celulaFila = celula.getFila();
         int celulaColumna = celula.getColumna();
-        ArrayList<Coordenada> vecinos = new Coordenada(celula.getFila(),celula.getColumna()).obtenerVecinos();
-        for (Coordenada coordenada: vecinos){
-            if (generacionActual.get_item(coordenada.getFila(),coordenada.getColumna()).isEstaVivo()){
+        ArrayList<Coordenada> vecinos = new Coordenada(celula.getFila(), celula.getColumna()).obtenerVecinos();
+        for (Coordenada coordenada : vecinos) {
+            if (siguienteGeneracion.get_item(coordenada.getFila(), coordenada.getColumna()).isEstaVivo()) {
                 vecinosvivos++;
             }
         }
@@ -143,9 +128,9 @@ public class JuegoDeLaVida {
     private boolean estaEnUnaEsquina(Celula celula) {
         boolean laCelulaEstaEnUnaEsquina = false;
         //ESQUINA
-        for (Coordenada coordenada : coordenadasEsquinas){
-            if (celula.getFila() == coordenada.getFila() && celula.getColumna() == coordenada.getColumna()){
-                laCelulaEstaEnUnaEsquina=true;
+        for (Coordenada coordenada : coordenadasEsquinas) {
+            if (celula.getFila() == coordenada.getFila() && celula.getColumna() == coordenada.getColumna()) {
+                laCelulaEstaEnUnaEsquina = true;
             }
         }
         return laCelulaEstaEnUnaEsquina;
@@ -154,98 +139,83 @@ public class JuegoDeLaVida {
     private int calcVecinosVivosEsquina(Celula celula) {
         int fila = celula.getFila();
         int columna = celula.getColumna();
-        Coordenada coordenadaDeLaEsquina = coordenadaDeLaEsquina(celula);
         int vecinosVivos = 0;
-        //Superior izquierda o inferior
-        if (coordenadaDeLaEsquina.getFila()==coordenadasEsquinas.getFirst().getFila() || coordenadaDeLaEsquina.getFila()==coordenadasEsquinas.get(3).getFila()){
+        boolean estaArriba = fila == coordenadasEsquinas.get(0).getFila();
+        if (estaArriba) {//Esquinas superiores
+            boolean estaEnEsquinaSupIzquierda = (columna == coordenadasEsquinas.get(0).getColumna());
+            if (estaEnEsquinaSupIzquierda) {
+                vecinosVivos = vecinoVivoEn(celula, new int[]{4, 6, 7});
+            }
+            if (!estaEnEsquinaSupIzquierda) {//Esta en la derecha
+                vecinosVivos = vecinoVivoEn(celula, new int[]{3,5,6});
+            }
 
+        }
+
+        if (!estaArriba) {//Esquinas inferiores
+            boolean estaEnEsquinaInfIzquierda = (columna == coordenadasEsquinas.get(3).getColumna());
+            if (estaEnEsquinaInfIzquierda) {
+                vecinosVivos = vecinoVivoEn(celula, new int[]{1, 2, 4});
+            }
+            if (!estaEnEsquinaInfIzquierda) {//Esta en la derecha
+                vecinosVivos = vecinoVivoEn(celula, new int[]{0,1,3});
+            }
         }
         return vecinosVivos;
     }
 
+    private int vecinoVivoEn(Celula celula, int[] posicionVecino) {
+        int cantidadVivos = 0;
+        for (int pos : posicionVecino) {
+            Coordenada coordenadaVecino = new Coordenada(
+                    celula.getFila() + desplazamientosVecinos.get(pos).getFila(),
+                    celula.getColumna() + desplazamientosVecinos.get(pos).getColumna()
+            );
+            if (generacionActual.get_item(coordenadaVecino.getFila(), coordenadaVecino.getColumna()).isEstaVivo()) {
+                cantidadVivos++;
+            }
+        }
+        return cantidadVivos;
+    }
 
-    private Coordenada coordenadaDeLaEsquina(Celula celula) {
-        Coordenada esquinaEnLaQueEsta = new Coordenada();
-        //ESQUINA
-        for (Coordenada coordenada : coordenadasEsquinas){
-            if (celula.getFila() == coordenada.getFila() && celula.getColumna() == coordenada.getColumna()){
-                esquinaEnLaQueEsta.setFila(coordenada.getFila());
-                esquinaEnLaQueEsta.setColumna(coordenada.getColumna());
+
+    private int calcVecinosVivosLaterales(Celula celula) {
+        int lateral = obtenerElLateral(celula);
+        int vecinosVivos = 0;
+        for (int cincoVecinos = 0; cincoVecinos < 5; cincoVecinos++) {
+            if (lateral==1 || lateral==3){//Lateral superior o inferior
+                if (lateral==1){
+                    vecinosVivos=vecinoVivoEn(celula, new int[]{3,4,5,6,7});
+                }else{
+                    vecinosVivos=vecinoVivoEn(celula, new int[]{0,1,2,3,4});
+                }
+            }else {//Laterales izquierdo o derecho
+                if (lateral==2){
+                    vecinosVivos=vecinoVivoEn(celula,new int[]{0,1,3,5,6});
+                }else {
+                    vecinosVivos=vecinoVivoEn(celula,new int[]{1,2,4,7,6});
+                }
             }
         }
 
-        return esquinaEnLaQueEsta;
-    }
-
-    private int calcVecinosVivosLaterales(Celula celula) {
-        int fila = celula.getFila();
-        int columna = celula.getColumna();
-        int lateral = obtenerElLateral(celula);
-        int vecinosVivos = 0;
-        int incrementoFila = 0;
-        int incrementoColumna = 0;
-
-        // Definir dirección de desplazamiento según el lateral
-        if (lateral == LATERAL_SUPERIOR || lateral == LATERAL_INFERIOR) {
-            // Determinar incremento de la fila, superior o inferior
-            incrementoFila = (lateral == LATERAL_SUPERIOR) ? 1 : -1;
-
-            // Verificar vecinos alrededor
-            vecinosVivos += estaViva(fila, columna - 1); // izquierda
-            vecinosVivos += estaViva(fila, columna + 1); // derecha
-            vecinosVivos += estaViva(fila + incrementoFila, columna - 1); // arriba / abajo-izquierda
-            vecinosVivos += estaViva(fila + incrementoFila, columna); // arriba/abajo
-            vecinosVivos += estaViva(fila + incrementoFila, columna + 1); // arriba/abajo-derecha
-
-        } else if (lateral == LATERAL_IZQUIERDO || lateral == LATERAL_DERECHO) {
-            // Determinar incremento de la columna, superior o inferior
-            incrementoColumna = (lateral == LATERAL_IZQUIERDO) ? 1 : -1;
-            // Verificar vecinos alrededor
-            vecinosVivos += estaViva(fila - 1, columna); // arriba
-            vecinosVivos += estaViva(fila + 1, columna); // abajo
-            vecinosVivos += estaViva(fila - 1, columna + incrementoColumna); // arriba-izquierda/derecha
-            vecinosVivos += estaViva(fila, columna + incrementoColumna); // izquierda/derecha
-            vecinosVivos += estaViva(fila + 1, columna + incrementoColumna); // abajo-izquierda/derecha
-        }
-
         return vecinosVivos;
-    }
-
-
-    // Metodo auxiliar para verificar si una célula está viva
-    private int estaViva(int fila, int columna) {
-        if (fila >= 0 && fila < generacionActual.getRow() && columna >= 0 && columna < generacionActual.getCol()) {
-            return generacionActual.get_item(fila, columna).isEstaVivo() ? 1 : 0;
-        }
-        return 0;
     }
 
 
     private int obtenerElLateral(Celula celula) {
-        int esquinaEnLaQueEsta = 0;
-        //ESQUINA
-        for (int indexLimitesExtremos = 0; indexLimitesExtremos < limitesExtremos.size(); indexLimitesExtremos += 3) {
-            if (celula.getFila() == limitesExtremos.get(indexLimitesExtremos)[0]) {
-                if (indexLimitesExtremos == 0) {
-                    esquinaEnLaQueEsta = 1;
-                } else {
-                    esquinaEnLaQueEsta = 3;
-                }
-                break;
-            }
-            if (celula.getColumna() == limitesExtremos.get(indexLimitesExtremos)[1]) {
-                if (indexLimitesExtremos == 0) {
-                    esquinaEnLaQueEsta = 2;
-                } else {
-                    esquinaEnLaQueEsta = 4;
-                }
-                break;
-            }
-        }
-        return esquinaEnLaQueEsta;
+        int fila = celula.getFila();
+        int columna = celula.getColumna();
+
+        if (fila == 0) return 1; // Lateral superior
+        if (columna == generacionActual.getCol() - 1) return 2; // Lateral derecho
+        if (fila == generacionActual.getRow() - 1) return 3; // Lateral inferior
+        if (columna == 0) return 4; // Lateral izquierdo
+
+        return 0; // No está en los laterales
     }
 
-    public ADTArray2D<Celula> getCuadricula() {
-        return cuadricula;
+
+    public ADTArray2D<Celula> getGeneracionActual() {
+        return generacionActual;
     }
 }

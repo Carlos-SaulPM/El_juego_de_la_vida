@@ -7,8 +7,8 @@ public class Coordenada {
     private int columna;
     private static final int[][] DESPLAZAMIENTOS_VECINOS = {
             {-1, -1}, {-1, 0}, {-1, 1},  // Vecinos superiores
-            {0, -1},         {0, 1},     // Vecinos laterales
-            {1, -1}, {1, 0}, {1, 1}      // Vecinos inferiores
+            {0, -1},           {0, 1},     // Vecinos laterales
+            {1, -1},  {1, 0},  {1, 1}      // Vecinos inferiores
     };
 
     public Coordenada(int fila, int columna) {
@@ -30,6 +30,7 @@ public class Coordenada {
 
         return vecinos;
     }
+
     public int getFila() {
         return fila;
     }

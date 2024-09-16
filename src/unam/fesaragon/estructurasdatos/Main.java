@@ -24,7 +24,7 @@ public class Main {
         // Ejecutar el juego y visualizar cada generación
         for (int i = 0; i < generaciones; i++) {
             System.out.println("Generación " + (i + 1) + ":");
-            imprimirCuadricula(juego.getCuadricula());
+            imprimirCuadricula(juego.getGeneracionActual());
             juego.actualizarGeneracion(); // Avanzar a la siguiente generación
             esperar(900); // Pausa entre generaciones
         }

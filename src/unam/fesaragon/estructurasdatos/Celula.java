@@ -11,6 +11,16 @@ public class Celula {
         this.fila = fila;
     }
 
+    public Celula(int columna, int fila) {
+        this.columna = columna;
+        this.fila = fila;
+        this.estaVivo = false;
+    }
+
+    public Celula() {
+        this.estaVivo=false;
+    }
+
     public boolean isEstaVivo() {
         return estaVivo;
     }
