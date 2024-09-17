@@ -2,10 +2,10 @@ package unam.fesaragon.estructurasdatos;
 
 public class Main {
     public static void main(String[] args) {
-        int filas = 10;
+        int filas = 5;
         int columnas = filas;
-        int generaciones = 10; // Número de generaciones que queremos simular
+        int generaciones = 20;
 
-        Consola.ejecutarJuego(filas, columnas, generaciones);
+        Consola.iniciar(filas, columnas, generaciones);
     }
 }
