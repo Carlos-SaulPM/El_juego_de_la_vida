@@ -2,9 +2,9 @@ package unam.fesaragon.estructurasdatos;
 
 public class Main {
     public static void main(String[] args) {
-        int filas = 5;
+        int filas = 20;
         int columnas = filas;
-        int generaciones = 20;
+        int generaciones = 30;
 
         Consola.iniciar(filas, columnas, generaciones);
     }
